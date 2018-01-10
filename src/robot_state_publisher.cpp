@@ -104,15 +104,17 @@ void RobotStatePublisher::publishFixedTransforms(const std::string& tf_prefix, b
 {
   ROS_DEBUG("Publishing transforms for fixed joints");
   std::vector<geometry_msgs::TransformStamped> tf_transforms;
-  geometry_msgs::TransformStamped tf_transform;
+  // geometry_msgs::TransformStamped tf_transform;
+
+  ros::Time stamp_ = ros::Time::now();
+  if (!use_tf_static) {
+    stamp_ += ros::Duration(0.5);
+  }
 
   // loop over all fixed segments
   for (map<string, SegmentPair>::const_iterator seg=segments_fixed_.begin(); seg != segments_fixed_.end(); seg++) {
     geometry_msgs::TransformStamped tf_transform = tf2::kdlToTransform(seg->second.segment.pose(0));
-    tf_transform.header.stamp = ros::Time::now();
-    if (!use_tf_static) {
-      tf_transform.header.stamp += ros::Duration(0.5);
-    }
+    tf_transform.header.stamp = stamp_;
     tf_transform.header.frame_id = tf::resolve(tf_prefix, seg->second.root);
     tf_transform.child_frame_id = tf::resolve(tf_prefix, seg->second.tip);
     tf_transforms.push_back(tf_transform);
